@@ -1,7 +1,7 @@
 {
   "whisper": {
     "base_url": "https://api.gptnb.ai",
-    "api_key": "sk-yUPx8kMIHAjRI6dpCf423eCe044f4cAb8eA6916b319528Ec",
+    "api_key": "YOUR_API_KEY",
     "models": [
       "whisper-large-v3",
       "whisper-large-v3-turbo",
@@ -12,7 +12,7 @@
   },
   "gpt": {
     "base_url": "https://api.gptnb.ai",
-    "api_key": "sk-yndzT6Fc9A8dSFscB1EbEf3dB1464dD7A2F28f818848D1Ce",
+    "api_key": "YOUR_API_KEY",
     "models": [
       "claude-sonnet-4-5-20250929",
       "gemini-pro",

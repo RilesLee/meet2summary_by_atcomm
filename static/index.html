@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@comm自动会议总结</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-name {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .login-title {
+            text-align: center;
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+        
+        .upload-area input {
+            display: none;
+        }
+        
+        .upload-progress {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .upload-progress.active {
+            display: block;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-small {
+            padding: 5px 15px;
+            font-size: 12px;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #757F9A 0%, #D7DDE8 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .task-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .task-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .task-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .task-status {
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .status-label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        .status-value {
+            color: #333;
+        }
+        
+        .status-processing {
+            color: #667eea;
+        }
+        
+        .status-completed {
+            color: #38ef7d;
+        }
+        
+        .status-failed {
+            color: #f45c43;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .config-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .config-group {
+            margin-bottom: 20px;
+        }
+        
+        .config-group h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            margin-bottom: -2px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+        
+        .time-stats {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        
+        .time-stats-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .time-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .time-stats-total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .prompt-list {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .prompt-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .prompt-item.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .prompt-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .prompt-actions {
+            display: flex;
+            gap: 5px;
+        }
+        /* 在现有CSS的最后添加以下响应式样式 */
+
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        border-radius: 5px;
+    }
+    
+    .header {
+        padding: 20px 15px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+    
+    .header p {
+        font-size: 12px;
+    }
+    
+    .user-info {
+        position: relative;
+        top: auto;
+        right: auto;
+        justify-content: center;
+        margin-top: 15px;
+        width: 100%;
+    }
+    
+    .content {
+        padding: 15px;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab {
+        padding: 10px 15px;
+        font-size: 14px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .upload-area {
+        padding: 30px 15px;
+    }
+    
+    .upload-area p:first-of-type {
+        font-size: 36px !important;
+    }
+    
+    .upload-area p {
+        font-size: 14px !important;
+    }
+    
+    .task-item {
+        padding: 15px;
+    }
+    
+    .task-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .task-name {
+        font-size: 16px;
+        word-break: break-all;
+    }
+    
+    .task-status {
+        padding: 12px;
+    }
+    
+    .status-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .download-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .download-buttons .btn {
+        width: 100%;
+        margin: 0;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .time-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* 防止iOS自动缩放 */
+    }
+    
+    .config-section {
+        padding: 15px;
+    }
+    
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .btn-small {
+        padding: 8px 15px;
+        font-size: 13px;
+    }
+    
+    .prompt-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .prompt-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .login-container {
+        margin: 50px auto;
+        padding: 25px;
+    }
+    
+    .message {
+        font-size: 14px;
+    }
+    
+    .error-message {
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 18px;
+    }
+    
+    .content {
+        padding: 10px;
+    }
+    
+    .section {
+        margin-bottom: 20px;
+    }
+    
+    .task-name {
+        font-size: 14px;
+    }
+    
+    .time-stats {
+        font-size: 12px;
+        padding: 12px;
+    }
+    
+    .btn {
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script>
+        let currentUser = null;
+        let currentTasks = [];
+        let currentPrompts = [];
+        let selectedPromptName = '会议总结';
+        const CHUNK_SIZE = 1 * 1024 * 1024;
+        
+        async function checkLogin() {
+            try {
+                const response = await fetch('/api/current-user');
+                const data = await response.json();
+                currentUser = data.username;
+                
+                if (currentUser) {
+                    renderMainApp();
+                    await loadPrompts();
+                    loadTasks();
+                } else {
+                    renderLoginPage();
+                }
+            } catch (error) {
+                console.error('检查登录状态失败:', error);
+                renderLoginPage();
+            }
+        }
+        
+        function renderLoginPage() {
+            document.getElementById('app').innerHTML = `
+                <div class="login-container">
+                    <h2 class="login-title">🎵 音频转录系统</h2>
+                    <div id="login-message"></div>
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <input type="text" id="username" placeholder="请输入用户名" required>
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%;">登录</button>
+                    </form>
+                </div>
+            `;
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            
+            if (!username) {
+                showLoginMessage('请输入用户名', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentUser = username;
+                    renderMainApp();
+                    await loadPrompts();
+                    loadTasks();
+                } else {
+                    showLoginMessage(data.error || '登录失败', 'error');
+                }
+            } catch (error) {
+                showLoginMessage('登录出错: ' + error.message, 'error');
+            }
+        }
+        
+        function showLoginMessage(msg, type = 'success') {
+            const messageDiv = document.getElementById('login-message');
+            messageDiv.innerHTML = `<div class="message ${type}">${msg}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 5000);
+        }
+        
+        function renderMainApp() {
+            document.getElementById('app').innerHTML = `
+                <div class="container">
+                    <div class="header">
+                        <h1>🎵 @comm自动会议总结</h1>
+                        <p>上传音频 → 自动处理（音频转文字→AI自动生成总结→自动转换PDF文件） → 获取会议记录总结PDF</p>
+                        <div class="user-info">
+                            <span class="user-name">👤 ${currentUser}</span>
+                            <button class="btn btn-small btn-danger" onclick="handleLogout()">登出</button>
+                        </div>
+                    </div>
+                    
+                    <div class="content">
+                        <div class="tabs">
+                            <button class="tab active" onclick="switchTab('upload')">上传任务</button>
+                            <button class="tab" onclick="switchTab('prompt')">Prompt管理</button>
+                            <button class="tab" onclick="switchTab('config')">配置管理</button>
+                        </div>
+                        
+                        <div id="upload-tab" class="tab-content active">
+                            <div class="section">
+                                <h2 class="section-title">上传音频文件</h2>
+                                <div class="form-group">
+                                    <label>选择Prompt模板</label>
+                                    <select id="promptSelector" onchange="handlePromptChange(this.value)">
+                                        <option value="">加载中...</option>
+                                    </select>
+                                </div>
+                                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                                    <input type="file" id="fileInput" accept="audio/*" onchange="handleFileSelect(this)">
+                                    <p style="font-size: 48px; margin-bottom: 10px;">📁</p>
+                                    <p style="font-size: 16px; color: #666;">点击选择音频文件</p>
+                                    <p style="font-size: 12px; color: #999; margin-top: 10px;">支持 MP3, WAV, M4A, FLAC 等格式</p>
+                                    <p style="font-size: 12px; color: #999; margin-top: 5px;">支持大文件分块上传，上传后将自动完成所有处理步骤</p>
+                                </div>
+                                <div class="upload-progress" id="uploadProgress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="uploadProgressBar" style="width: 0%">0%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="message"></div>
+                            
+                            <div class="section">
+                                <h2 class="section-title">
+                                    <span>任务列表</span>
+                                    <button class="btn btn-small btn-secondary" onclick="loadTasks()">🔄 刷新</button>
+                                </h2>
+                                <div id="taskList" class="task-list"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="prompt-tab" class="tab-content">
+                            <div class="section">
+                                <h2 class="section-title">
+                                    <span>Prompt模板管理</span>
+                                    <button class="btn btn-small btn-success" onclick="showNewPromptForm()">➕ 新建</button>
+                                </h2>
+                                <div id="promptFormContainer" style="display: none;">
+                                    <div class="config-section">
+                                        <form onsubmit="handleSavePrompt(event)">
+                                            <div class="form-group">
+                                                <label>模板名称</label>
+                                                <input type="text" id="promptNameInput" placeholder="例如：会议总结" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Prompt内容</label>
+                                                <textarea id="promptContentInput" placeholder="输入GPT的系统提示词..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-success">💾 保存</button>
+                                            <button type="button" class="btn btn-secondary" onclick="hidePromptForm()">取消</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div id="promptListContainer" class="prompt-list"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="config-tab" class="tab-content">
+                            <div class="section">
+                                <h2 class="section-title">API配置</h2>
+                                <div class="config-section">
+                                    <form onsubmit="handleSaveConfig(event)">
+                                        <div class="config-group">
+                                            <h3>Whisper API 配置</h3>
+                                            <div class="form-group">
+                                                <label>Base URL</label>
+                                                <input type="text" id="whisperBaseUrl" placeholder="https://api.example.com" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>API Key</label>
+                                                <input type="password" id="whisperApiKey" placeholder="sk-..." required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>模型</label>
+                                                <select id="whisperModel" required></select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Temperature (0-1)</label>
+                                                <input type="number" id="whisperTemperature" step="0.1" min="0" max="1" value="0.2" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="config-group">
+                                            <h3>GPT API 配置</h3>
+                                            <div class="form-group">
+                                                <label>Base URL</label>
+                                                <input type="text" id="gptBaseUrl" placeholder="https://api.example.com" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>API Key</label>
+                                                <input type="password" id="gptApiKey" placeholder="sk-..." required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>模型</label>
+                                                <select id="gptModel" required></select>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-success">💾 保存配置</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadPrompts() {
+            try {
+                const response = await fetch('/api/prompts');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentPrompts = data.prompts;
+                    selectedPromptName = data.default;
+                    updatePromptSelector();
+                    updatePromptList();
+                }
+            } catch (error) {
+                console.error('加载Prompt失败:', error);
+            }
+        }
+        
+        function updatePromptSelector() {
+            const selector = document.getElementById('promptSelector');
+            if (!selector) return;
+            
+            selector.innerHTML = currentPrompts.map(name => 
+                `<option value="${name}" ${name === selectedPromptName ? 'selected' : ''}>${name}</option>`
+            ).join('');
+        }
+        
+        function updatePromptList() {
+            const container = document.getElementById('promptListContainer');
+            if (!container) return;
+            
+            if (currentPrompts.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><p>暂无Prompt模板</p></div>';
+                return;
+            }
+            
+            container.innerHTML = currentPrompts.map(name => `
+                <div class="prompt-item">
+                    <span class="prompt-name">${name}</span>
+                    <div class="prompt-actions">
+                        <button class="btn btn-small btn-secondary" onclick="editPrompt('${name}')">✏️ 编辑</button>
+                        ${name !== '会议总结' ? `<button class="btn btn-small btn-danger" onclick="deletePrompt('${name}')">🗑️ 删除</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function handlePromptChange(value) {
+            selectedPromptName = value;
+        }
+        
+        function showNewPromptForm() {
+            document.getElementById('promptNameInput').value = '';
+            document.getElementById('promptContentInput').value = '';
+            document.getElementById('promptFormContainer').style.display = 'block';
+        }
+        
+        function hidePromptForm() {
+            document.getElementById('promptFormContainer').style.display = 'none';
+        }
+        
+        async function editPrompt(name) {
+            try {
+                const response = await fetch(`/api/prompt/${encodeURIComponent(name)}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('promptNameInput').value = data.name;
+                    document.getElementById('promptContentInput').value = data.content;
+                    document.getElementById('promptFormContainer').style.display = 'block';
+                } else {
+                    alert('加载Prompt失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('加载Prompt失败: ' + error.message);
+            }
+        }
+        
+        async function deletePrompt(name) {
+            if (!confirm(`确定要删除Prompt "${name}" 吗？`)) return;
+            
+            try {
+                const response = await fetch(`/api/prompt/${encodeURIComponent(name)}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Prompt删除成功');
+                    await loadPrompts();
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('删除失败: ' + error.message);
+            }
+        }
+        
+        async function handleSavePrompt(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('promptNameInput').value.trim();
+            const content = document.getElementById('promptContentInput').value.trim();
+            
+            try {
+                const response = await fetch('/api/prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, content })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Prompt保存成功');
+                    hidePromptForm();
+                    await loadPrompts();
+                } else {
+                    alert('保存失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('保存失败: ' + error.message);
+            }
+        }
+        
+        async function handleLogout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                currentUser = null;
+                renderLoginPage();
+            } catch (error) {
+                console.error('登出失败:', error);
+            }
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'config') {
+                loadConfig();
+            } else if (tabName === 'prompt') {
+                loadPrompts();
+            }
+        }
+        
+        async function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const uploadId = Date.now().toString();
+            const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+            
+            document.getElementById('uploadProgress').classList.add('active');
+            
+            try {
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * CHUNK_SIZE;
+                    const end = Math.min(start + CHUNK_SIZE, file.size);
+                    const chunk = file.slice(start, end);
+                    
+                    const formData = new FormData();
+                    formData.append('chunk', chunk);
+                    formData.append('chunkIndex', i);
+                    formData.append('totalChunks', totalChunks);
+                    formData.append('filename', file.name);
+                    formData.append('uploadId', uploadId);
+                    
+                    const response = await fetch('/api/upload-chunk', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || '上传失败');
+                    }
+                    
+                    const progress = Math.round(((i + 1) / totalChunks) * 100);
+                    updateProgress(progress);
+                    
+                    if (data.complete) {
+                        await completeUpload(data.filename);
+                        break;
+                    }
+                }
+            } catch (error) {
+                showMessage('上传失败: ' + error.message, 'error');
+                document.getElementById('uploadProgress').classList.remove('active');
+            }
+            
+            input.value = '';
+        }
+        
+        function updateProgress(percent) {
+            const bar = document.getElementById('uploadProgressBar');
+            bar.style.width = percent + '%';
+            bar.textContent = percent + '%';
+        }
+        
+        async function completeUpload(filename) {
+            try {
+                const response = await fetch('/api/upload-complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        filename,
+                        prompt_name: selectedPromptName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('上传成功！任务已开始自动处理', 'success');
+                    setTimeout(() => loadTasks(), 1000);
+                } else {
+                    showMessage('处理失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('处理失败: ' + error.message, 'error');
+            } finally {
+                document.getElementById('uploadProgress').classList.remove('active');
+                updateProgress(0);
+            }
+        }
+        
+        async function loadTasks() {
+            try {
+                const response = await fetch('/api/tasks');
+                const tasks = await response.json();
+                
+                currentTasks = tasks;
+                renderTasks(tasks);
+                
+                const hasProcessing = tasks.some(t => t.status === 'processing');
+                if (hasProcessing) {
+                    setTimeout(loadTasks, 3000);
+                }
+            } catch (error) {
+                console.error('加载任务失败:', error);
+            }
+        }
+        
+        function renderTasks(tasks) {
+            const container = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📋</div><p>暂无任务</p></div>';
+                return;
+            }
+            
+            container.innerHTML = tasks.map(task => renderTaskItem(task)).join('');
+        }
+        
+        function renderTaskItem(task) {
+            const statusClass = task.status === 'completed' ? 'status-completed' : 
+                               task.status === 'failed' ? 'status-failed' : 'status-processing';
+            
+            const statusText = task.status === 'completed' ? '✅ 已完成' : 
+                              task.status === 'failed' ? '❌ 失败' : '⏳ 处理中';
+            
+            const timeStats = calculateTimeStats(task);
+            
+            return `
+                <div class="task-item">
+                    <div class="task-header">
+                        <div>
+                            <div class="task-name">${task.filename}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 5px;">
+                                使用模板: ${task.prompt_name || '会议总结'}
+                            </div>
+                        </div>
+                        <span class="${statusClass}" style="font-weight: bold;">${statusText}</span>
+                    </div>
+                    
+                    <div class="task-status">
+                        <div class="status-row">
+                            <span class="status-label">当前步骤:</span>
+                            <span class="status-value">${task.current_step || '-'}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${task.progress || 0}%">${task.progress || 0}%</div>
+                        </div>
+                    </div>
+                    
+                    ${task.error ? `<div class="error-message">❌ ${task.error}</div>` : ''}
+                    
+                    ${timeStats ? `<div class="time-stats">${timeStats}</div>` : ''}
+                    
+                    <div class="download-buttons">
+                        ${task.txt_file ? `<button class="btn btn-small btn-success" onclick="downloadFile('${task.id}', 'txt')">📄 转录文本</button>` : ''}
+                        ${task.json_file ? `<button class="btn btn-small btn-success" onclick="downloadFile('${task.id}', 'json')">📋 JSON</button>` : ''}
+                        ${task.html_file ? `<button class="btn btn-small btn-success" onclick="downloadFile('${task.id}', 'html')">🌐 HTML</button>` : ''}
+                        ${task.pdf_file ? `<button class="btn btn-small btn-success" onclick="downloadFile('${task.id}', 'pdf')">📕 PDF</button>` : ''}
+                        ${task.status === 'failed' ? `<button class="btn btn-small btn-warning" onclick="retryTask('${task.id}')">🔄 重试</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function calculateTimeStats(task) {
+            if (!task.completed_at && !task.failed_at) return null;
+            
+            const stats = [];
+            
+            if (task.mp3_started_at && task.mp3_completed_at) {
+                const duration = (new Date(task.mp3_completed_at) - new Date(task.mp3_started_at)) / 1000;
+                stats.push(`MP3转换: ${duration.toFixed(1)}秒`);
+            }
+            
+            if (task.slice_started_at && task.slice_completed_at) {
+                const duration = (new Date(task.slice_completed_at) - new Date(task.slice_started_at)) / 1000;
+                stats.push(`分段处理: ${duration.toFixed(1)}秒`);
+            }
+            
+            if (task.transcribe_started_at && task.transcribe_completed_at) {
+                const duration = (new Date(task.transcribe_completed_at) - new Date(task.transcribe_started_at)) / 1000;
+                stats.push(`Whisper转录: ${duration.toFixed(1)}秒`);
+            }
+            
+            if (task.summary_started_at && task.summary_completed_at) {
+                const duration = (new Date(task.summary_completed_at) - new Date(task.summary_started_at)) / 1000;
+                stats.push(`GPT总结: ${duration.toFixed(1)}秒`);
+            }
+            
+            if (task.pdf_started_at && task.pdf_completed_at) {
+                const duration = (new Date(task.pdf_completed_at) - new Date(task.pdf_started_at)) / 1000;
+                stats.push(`PDF生成: ${duration.toFixed(1)}秒`);
+            }
+            
+            if (stats.length === 0) return null;
+            
+            const totalTime = task.completed_at ? 
+                (new Date(task.completed_at) - new Date(task.created_at)) / 1000 :
+                (new Date(task.failed_at) - new Date(task.created_at)) / 1000;
+            
+            const gridHtml = stats.map(s => `<div>${s}</div>`).join('');
+            
+            return `
+                <div class="time-stats-title">⏱️ 处理时间统计</div>
+                <div class="time-stats-grid">${gridHtml}</div>
+                <div class="time-stats-total"><strong>总耗时: ${totalTime.toFixed(1)}秒</strong></div>
+            `;
+        }
+        
+        function downloadFile(taskId, fileType) {
+            window.location.href = `/api/download/${taskId}/${fileType}`;
+        }
+        
+        async function retryTask(taskId) {
+            if (!confirm('确定要重试此任务吗？')) return;
+            
+            try {
+                const response = await fetch(`/api/retry/${taskId}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('任务已重新开始', 'success');
+                    setTimeout(loadTasks, 1000);
+                } else {
+                    showMessage('重试失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('重试失败: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                document.getElementById('whisperBaseUrl').value = config.whisper.base_url;
+                document.getElementById('whisperApiKey').value = config.whisper.api_key;
+                document.getElementById('whisperTemperature').value = config.whisper.temperature;
+                
+                const whisperModelSelect = document.getElementById('whisperModel');
+                whisperModelSelect.innerHTML = config.whisper.models.map(model => 
+                    `<option value="${model}" ${model === config.whisper.selected_model ? 'selected' : ''}>${model}</option>`
+                ).join('');
+                
+                document.getElementById('gptBaseUrl').value = config.gpt.base_url;
+                document.getElementById('gptApiKey').value = config.gpt.api_key;
+                
+                const gptModelSelect = document.getElementById('gptModel');
+                gptModelSelect.innerHTML = config.gpt.models.map(model => 
+                    `<option value="${model}" ${model === config.gpt.selected_model ? 'selected' : ''}>${model}</option>`
+                ).join('');
+                
+            } catch (error) {
+                showMessage('加载配置失败: ' + error.message, 'error');
+            }
+        }
+        
+        async function handleSaveConfig(event) {
+            event.preventDefault();
+            
+            const config = {
+                whisper: {
+                    base_url: document.getElementById('whisperBaseUrl').value,
+                    api_key: document.getElementById('whisperApiKey').value,
+                    models: Array.from(document.getElementById('whisperModel').options).map(opt => opt.value),
+                    selected_model: document.getElementById('whisperModel').value,
+                    temperature: parseFloat(document.getElementById('whisperTemperature').value)
+                },
+                gpt: {
+                    base_url: document.getElementById('gptBaseUrl').value,
+                    api_key: document.getElementById('gptApiKey').value,
+                    models: Array.from(document.getElementById('gptModel').options).map(opt => opt.value),
+                    selected_model: document.getElementById('gptModel').value
+                }
+            };
+            
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('配置保存成功', 'success');
+                } else {
+                    showMessage('保存失败: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('保存失败: ' + error.message, 'error');
+            }
+        }
+        
+        function showMessage(msg, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="message ${type}">${msg}</div>`;
+            setTimeout(() => messageDiv.innerHTML = '', 5000);
+        }
+        
+        checkLogin();
+    </script>
+</body>
+</html>
