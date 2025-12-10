@@ -1,0 +1,8 @@
+{
+  "host": "localhost",
+  "port": 3306,
+  "user": "voice_transcribe",
+  "password": "admin123",
+  "database": "voice_transcribe",
+  "charset": "utf8mb4"
+}

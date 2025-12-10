@@ -1,0 +1,33 @@
+DROP TABLE IF EXISTS tasks;
+
+CREATE TABLE tasks (
+    id VARCHAR(255) PRIMARY KEY,
+    username VARCHAR(100) NOT NULL,
+    filename VARCHAR(500) NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    current_step VARCHAR(100),
+    progress INT DEFAULT 0,
+    file_path TEXT,
+    json_file TEXT,
+    html_file TEXT,
+    pdf_file TEXT,
+    txt_file TEXT,
+    error TEXT,
+    created_at DATETIME,
+    completed_at DATETIME,
+    failed_at DATETIME,
+    upload_completed_at DATETIME,
+    mp3_started_at DATETIME,
+    mp3_completed_at DATETIME,
+    slice_started_at DATETIME,
+    slice_completed_at DATETIME,
+    transcribe_started_at DATETIME,
+    transcribe_completed_at DATETIME,
+    summary_started_at DATETIME,
+    summary_completed_at DATETIME,
+    pdf_started_at DATETIME,
+    pdf_completed_at DATETIME,
+    INDEX idx_username (username),
+    INDEX idx_status (status),
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
